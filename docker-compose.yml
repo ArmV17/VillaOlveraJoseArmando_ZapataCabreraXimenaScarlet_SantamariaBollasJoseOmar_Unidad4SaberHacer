@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tasksdb
+    ports:
+      - "5432:5432"
+
+  app1:
+    build: ./backend
+    environment:
+      - DB_HOST=db
+    depends_on:
+      - db
+    ports:
+      - "3001:3000"
+
+  app2:
+    build: ./backend
+    environment:
+      - DB_HOST=db
+    depends_on:
+      - db
+    ports:
+      - "3002:3000"
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3003:3000"
+    depends_on:
+      - app1
+      - app2
+
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - "80:80"
+    depends_on:
+      - app1
+      - app2
